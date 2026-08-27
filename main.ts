@@ -92,11 +92,54 @@ const getAccessToken = async (
 			response = res.data;
 		})
 		.catch((err) => {
-			if ((err.code = "ERR_NETWORK") && showError) {
-				new Notice("Oops! Network error :(");
-				new Notice("Or maybe no refresh token provided?", 5000);
+			if (err.response) {
+				// The auth server answered with a non-2xx status. This is the
+				// common misconfiguration case: 404 => wrong URL/path,
+				// 400/401 => Google rejected the refresh token (invalid_grant),
+				// 5xx => the server/token exchange itself failed. Surface the
+				// actual status/body instead of a generic "login failed".
+				const status = err.response.status;
+				const body =
+					typeof err.response.data === "object"
+						? JSON.stringify(err.response.data)
+						: String(err.response.data ?? "");
+				console.error(
+					`getAccessToken: HTTP ${status} from ${refreshAccessTokenURL} :: ${body}`
+				);
+				if (showError) {
+					new Notice(`Login failed: HTTP ${status}`, 7000);
+					if (status === 404) {
+						new Notice(
+							"Endpoint not found — check the refresh access-token URL (path/trailing slash) in settings.",
+							9000
+						);
+					} else if (status === 400 || status === 401) {
+						new Notice(
+							"Token rejected by Google (invalid_grant?). Re-generate your refresh token from the login link.",
+							9000
+						);
+					} else {
+						new Notice(body || "See developer console for details.", 8000);
+					}
+				}
+				response = "error";
+			} else if (err.code === "ERR_NETWORK" || err.request) {
+				// Request was sent but no response came back: offline, wrong
+				// host, DNS failure, or a CORS block from the auth server.
+				console.error(`getAccessToken: network error :: ${err.message}`);
+				if (showError) {
+					new Notice("Network error reaching the auth server :(", 6000);
+					new Notice(
+						"Check the URL, your connection, and that the server sends CORS headers.",
+						6000
+					);
+				}
 				response = "network_error";
 			} else {
+				console.error(`getAccessToken: ${err.message}`);
+				if (showError) {
+					new Notice(`Login failed: ${err.message}`, 6000);
+				}
 				response = "error";
 			}
 		});
@@ -2325,9 +2368,10 @@ class syncSettings extends PluginSettingTab {
 					setIcon(sync_icons, "sync");
 					var res: any = await getAccessToken(
 						this.plugin.settings.refreshToken,
-						this.plugin.settings.refreshAccessTokenURL
+						this.plugin.settings.refreshAccessTokenURL,
+						true
 					); // check for accesstoken
-					if (res != "error") {
+					if (res && res.access_token) {
 						// display status accordingly
 						this.plugin.settings.accessToken = res.access_token;
 						this.plugin.settings.validToken = true;
