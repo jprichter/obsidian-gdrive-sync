@@ -103,34 +103,38 @@ const getAccessToken = async (
 					typeof err.response.data === "object"
 						? JSON.stringify(err.response.data)
 						: String(err.response.data ?? "");
+				// Full technical detail (status, endpoint, response body) goes
+				// to the console for developers; the user-facing Notice stays
+				// plain-language and actionable.
 				console.error(
 					`getAccessToken: HTTP ${status} from ${refreshAccessTokenURL} :: ${body}`
 				);
 				if (showError) {
-					new Notice(`Login failed: HTTP ${status}`, 7000);
 					if (status === 404) {
 						new Notice(
-							"Endpoint not found — check the refresh access-token URL (path/trailing slash) in settings.",
+							"Login failed: couldn't find the login server. Check the refresh-token URL in settings.",
 							9000
 						);
 					} else if (status === 400 || status === 401) {
 						new Notice(
-							"Token rejected by Google (invalid_grant?). Re-generate your refresh token from the login link.",
+							"Login failed: your token was rejected. Re-generate your refresh token from the login link.",
 							9000
 						);
 					} else {
-						new Notice(body || "See developer console for details.", 8000);
+						new Notice("Login failed. Please try again.", 8000);
 					}
 				}
 				response = "error";
 			} else if (err.code === "ERR_NETWORK" || err.request) {
 				// Request was sent but no response came back: offline, wrong
-				// host, DNS failure, or a CORS block from the auth server.
-				console.error(`getAccessToken: network error :: ${err.message}`);
+				// host, DNS failure, or a CORS block from the auth server. The
+				// technical hint (incl. CORS) is logged, not shown to the user.
+				console.error(
+					`getAccessToken: network error :: ${err.message} (check connectivity, the URL, and that the auth server sends CORS headers)`
+				);
 				if (showError) {
-					new Notice("Network error reaching the auth server :(", 6000);
 					new Notice(
-						"Check the URL, your connection, and that the server sends CORS headers.",
+						"Login failed: couldn't reach the login server. Check your connection and the refresh-token URL.",
 						6000
 					);
 				}
@@ -138,7 +142,7 @@ const getAccessToken = async (
 			} else {
 				console.error(`getAccessToken: ${err.message}`);
 				if (showError) {
-					new Notice(`Login failed: ${err.message}`, 6000);
+					new Notice("Login failed. Please try again.", 6000);
 				}
 				response = "error";
 			}
