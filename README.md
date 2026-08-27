@@ -97,6 +97,8 @@ Unfortunately no, for security reasons the plug-in has access to only those file
 The plug-in has limited access to only those files it creates itself, so it can't read any other files on your Drive. While giving the plug-in the necessary permissions you can confirm it yourself. And as for the token exchange part a server has to be unfortunately involved. I have a server hosted (whose link is the LogIn link) which does the code exchange for you, you can however implement your own Google Cloud Project and retrieve the refresh token. The plug-in just requires the refresh token to work, how it is retrieved is none of it's concern. More info at https://github.com/stravo1/obsidian-gdrive-sync/issues/24
 
 #### Q. How can I use my own oAuth callback server to generate an access token.
+> 💡 **Ready-made sample:** a self-hostable Cloudflare Worker that implements both endpoints below, plus a step-by-step setup guide (Google OAuth client → deploy → point the plugin at it), lives in [`self-hosted-auth-worker/`](self-hosted-auth-worker/). Use it if you'd rather not run your own refresh token through the default server.
+
 In the plugins data.json file, include the following fields to the JSON object, replacing the below default values with your server URL.
   ```json
   {

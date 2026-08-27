@@ -1,0 +1,13 @@
+# Copy this file to `.dev.vars` (which is gitignored) for local `wrangler dev`.
+# These are ONLY for local testing — production uses `wrangler secret put`.
+#
+#   cp .dev.vars.example .dev.vars
+#   # then fill in the real values below
+
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Optional. Leave unset to derive from the request origin.
+# For `wrangler dev` the origin is http://localhost:8787, so if you want to test
+# the full login flow locally, register this exact URL in Google Cloud and set:
+# REDIRECT_URI=http://localhost:8787/auth/obsidian/callback

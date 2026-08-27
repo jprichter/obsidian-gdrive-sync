@@ -1,0 +1,14 @@
+name = "obsidian-gdrive-auth"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and (optionally) REDIRECT_URI are set as
+# secrets, not committed here. See README.md:
+#   wrangler secret put GOOGLE_CLIENT_ID
+#   wrangler secret put GOOGLE_CLIENT_SECRET
+#
+# REDIRECT_URI is optional — the worker derives it from the request origin. Only
+# set it if you front the worker with a custom domain and the derived origin
+# differs from what you registered in Google Cloud. It can be a plain var:
+# [vars]
+# REDIRECT_URI = "https://your-worker.example.workers.dev/auth/obsidian/callback"
